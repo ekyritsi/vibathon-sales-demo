@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Deal Dashboard</title>
+<style>
+  :root { --bg:#0d1117; --card:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e; --accent:#2f81f7; --green:#3fb950; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--text); }
+  header { padding:24px 32px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+  h1 { margin:0; font-size:26px; }
+  .sub { color:var(--muted); font-size:14px; }
+  main { padding:24px 32px; max-width:1200px; margin:auto; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+  .kpi { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .kpi .label { color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:.05em; }
+  .kpi .value { font-size:30px; font-weight:700; margin-top:6px; }
+  .toolbar { display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+  select, input, button { font:inherit; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--text); }
+  button.primary { background:var(--green); border-color:var(--green); color:#fff; font-weight:600; cursor:pointer; }
+  button.primary:hover { filter:brightness(1.1); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  th, td { padding:14px 16px; text-align:left; border-bottom:1px solid var(--border); }
+  th { color:var(--muted); font-size:13px; text-transform:uppercase; }
+  tr:last-child td { border-bottom:none; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .badge { padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; }
+  .Prospecting{background:#30363d} .Qualified{background:#1f6feb55} .Proposal{background:#a371f755}
+  .Negotiation{background:#d2992255} .Closed\ Won{background:#3fb95055}
+  dialog { background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:12px; padding:24px; width:min(420px,90vw); }
+  dialog label { display:block; margin:12px 0 4px; color:var(--muted); font-size:13px; }
+  dialog input, dialog select { width:100%; }
+  .actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
+  .empty { text-align:center; color:var(--muted); padding:32px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>📈 Sales Deal Dashboard</h1>
+    <div class="sub">Fictional demo data — for the Vibathon</div>
+  </div>
+  <button class="primary" id="addBtn">+ Add opportunity</button>
+</header>
+<main>
+  <section class="kpis">
+    <div class="kpi"><div class="label">Total pipeline</div><div class="value" id="kTotal"></div></div>
+    <div class="kpi"><div class="label">Deals</div><div class="value" id="kCount"></div></div>
+    <div class="kpi"><div class="label">Average deal size</div><div class="value" id="kAvg"></div></div>
+  </section>
+  <div class="toolbar">
+    <label for="stageFilter">Filter by stage:</label>
+    <select id="stageFilter"><option value="All">All stages</option></select>
+  </div>
+  <table>
+    <thead><tr><th>Company</th><th style="text-align:right">Deal value</th><th>Stage</th><th>Close date</th><th>Next action</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</main>
+
+<dialog id="dlg">
+  <form method="dialog" id="form">
+    <h2 style="margin-top:0">Add a fictional opportunity</h2>
+    <label>Company name<input name="company" required placeholder="e.g. Contoso Ltd"></label>
+    <label>Deal value (USD)<input name="value" type="number" min="1" required placeholder="50000"></label>
+    <label>Stage<select name="stage" id="stageSelect"></select></label>
+    <label>Close date<input name="close" type="date" required></label>
+    <label>Next action<input name="next" required placeholder="e.g. Send proposal"></label>
+    <div class="actions">
+      <button type="button" id="cancelBtn">Cancel</button>
+      <button class="primary" type="submit">Add deal</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  const STAGES = ["Prospecting","Qualified","Proposal","Negotiation","Closed Won"];
+  const deals = [
+    { company:"Contoso Ltd",        value:120000, stage:"Negotiation", close:"2026-12-15", next:"Final pricing call" },
+    { company:"Fabrikam Inc",       value: 45000, stage:"Proposal",    close:"2027-01-20", next:"Send revised proposal" },
+    { company:"Northwind Traders",  value: 78000, stage:"Qualified",   close:"2027-02-10", next:"Discovery workshop" },
+    { company:"Adventure Works",    value:210000, stage:"Closed Won",  close:"2026-11-30", next:"Kickoff meeting" },
+    { company:"Tailspin Toys",      value: 32000, stage:"Prospecting", close:"2027-03-05", next:"Intro email to CTO" },
+    { company:"Wide World Importers",value:95000, stage:"Proposal",    close:"2027-01-08", next:"Security review" },
+    { company:"Litware Labs",       value: 61000, stage:"Negotiation", close:"2026-12-22", next:"Legal redlines" },
+    { company:"Proseware Group",    value: 54000, stage:"Qualified",   close:"2027-02-28", next:"Demo for dev leads" },
+  ];
+  const money = n => n.toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  STAGES.forEach(s => { $("stageFilter").add(new Option(s,s)); $("stageSelect").add(new Option(s,s)); });
+
+  function render() {
+    const f = $("stageFilter").value;
+    const list = f === "All" ? deals : deals.filter(d => d.stage === f);
+    const total = list.reduce((a,d) => a + d.value, 0);
+    $("kTotal").textContent = money(total);
+    $("kCount").textContent = list.length;
+    $("kAvg").textContent = money(list.length ? total / list.length : 0);
+    $("rows").innerHTML = list.length ? list.map(d => `
+      <tr>
+        <td>${esc(d.company)}</td>
+        <td class="num">${money(d.value)}</td>
+        <td><span class="badge ${d.stage}">${d.stage}</span></td>
+        <td>${new Date(d.close + "T00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</td>
+        <td>${esc(d.next)}</td>
+      </tr>`).join("") : `<tr><td colspan="5" class="empty">No deals in this stage yet.</td></tr>`;
+  }
+
+  $("stageFilter").addEventListener("change", render);
+  $("addBtn").addEventListener("click", () => { $("form").reset(); $("dlg").showModal(); });
+  $("cancelBtn").addEventListener("click", () => $("dlg").close());
+  $("form").addEventListener("submit", () => {
+    const fd = new FormData($("form"));
+    deals.push({ company:fd.get("company"), value:Number(fd.get("value")), stage:fd.get("stage"), close:fd.get("close"), next:fd.get("next") });
+    render();
+  });
+  render();
+</script>
+</body>
+</html>
