@@ -8,6 +8,7 @@ Watch an idea become a working app in minutes — then try it yourself. No codin
 | File | Who it's for | Purpose |
 |---|---|---|
 | [`FACILITATOR-GUIDE.md`](FACILITATOR-GUIDE.md) | Presenter | Prep checklist, minute-by-minute script, what to say, backup plans |
+| [`PRESENTER-TOUR.md`](PRESENTER-TOUR.md) | Presenter | Four-minute tour of skills, agents, MCP, and canvases while attendees build |
 | [`ATTENDEE-HANDOUT.md`](ATTENDEE-HANDOUT.md) | Everyone in the room | Simple step-by-step instructions + prompts to copy |
 | [`prompts/1-starter-prompt.md`](prompts/1-starter-prompt.md) | Everyone | The one prompt that builds the app |
 | [`prompts/2-play-prompts.md`](prompts/2-play-prompts.md) | Everyone | Pick-and-mix prompts to customize the app |
@@ -18,6 +19,8 @@ Watch an idea become a working app in minutes — then try it yourself. No codin
 > *"Can a sales leader turn an idea into a working tool in 15 minutes — without writing a line of code?"*
 
 Everyone builds the same **Sales Deal Dashboard** (fictional data, one HTML file, opens in the browser), then makes it their own.
+
+While attendees' apps build, the presenter gives a short tour of **skills, custom agents, MCP, and canvases**. These are presenter-only examples, not attendee prerequisites. Complete one dashboard enhancement; a second is a bonus.
 
 ## Ground rules
 
